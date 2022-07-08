@@ -31,6 +31,6 @@ class Queue {
   }
 
   finish(int id) {
-    socket.write(jsonEncode({"id": id}));
+    socket.write(id);
   }
 }

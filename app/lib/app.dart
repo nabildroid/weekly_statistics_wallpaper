@@ -24,7 +24,8 @@ class _AppState extends State<App> {
   List<QueueRequest> requests = [];
 
   QueueRequest? get request {
-    return requests.first;
+    if (requests.isNotEmpty) return requests.first;
+    return null;
   }
 
   @override
@@ -36,11 +37,16 @@ class _AppState extends State<App> {
   void init() async {
     await events.init();
     events.listen().listen((event) {
-      requests.add(event);
+      setState(() {
+        requests.add(event);
+      });
     });
   }
 
   void nextRequest() {
+    if (request == null) return;
+    events.finish(request!.id);
+
     setState(() {
       requests.removeAt(0);
     });
