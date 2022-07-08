@@ -9,6 +9,8 @@ import 'package:http/http.dart';
 import 'package:weekly_statistics_wallpaper/queue.dart';
 import 'package:weekly_statistics_wallpaper/statistics_painter.dart';
 
+import 'utils.dart';
+
 class App extends StatefulWidget {
   const App({Key? key}) : super(key: key);
 
@@ -42,18 +44,11 @@ class _AppState extends State<App> {
     final img = await picture.toImage(size.width.floor(), size.height.floor());
     final pngBytes = await img.toByteData(format: ImageByteFormat.png);
     if (pngBytes != null) {
-      await writeToFile(pngBytes, "img.png");
+      await Utils.writeToFile(pngBytes, "img.png");
     }
   }
 
-  Future<void> writeToFile(ByteData data, String path) {
-    final buffer = data.buffer;
-    return File(path).writeAsBytes(
-      buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
-    );
-  }
-
-  Future<dynamic> fetch() async {
+  Future<dynamic> fetchStatistics() async {
     const endpoint = "https://supernabil.herokuapp.com/ticktick/wallpaper";
     final response = await get(Uri.parse(endpoint));
     return jsonDecode(response.body);
@@ -88,58 +83,43 @@ class _AppState extends State<App> {
     ];
   }
 
+  Future<StatisticsPainter> createStatisticsPainter() async {
+    final stats = await fetchStatistics();
+
+    final weeks = stats["weeks"].reversed.toList();
+    final isPositive = double.parse(weeks[0]) > double.parse(weeks[1]);
+    final colors = await fetchColor(isPositive);
+
+    return StatisticsPainter(
+      chartPoints: Utils.parseDoubles(stats["weeks"]),
+      productivityValue: stats["productivity"],
+      habitPoints: Utils.parseDoubles(stats["habits"]),
+      start: stats["start"] != null ? DateTime.parse("2022-06-27") : null,
+      primary: colors[0],
+      secondary: colors[1],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<dynamic>(
-        future: fetch(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            final data = snapshot.data;
-            final weeks = data["weeks"].reversed.toList();
-            final isPositive = double.parse(weeks[0]) > double.parse(weeks[1]);
-            return FutureBuilder<List<Color>>(
-                future: fetchColor(isPositive),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState != ConnectionState.done) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
+    return FutureBuilder<StatisticsPainter>(
+      future: createStatisticsPainter(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          generateImage(snapshot.data!);
 
-                  final colors = snapshot.data!;
-                  print(colors[1]);
-                  final statisticsPainter = StatisticsPainter(
-                    chartPoints: Utils.parseDoubles(data["weeks"]),
-                    productivityValue: data["productivity"],
-                    habitPoints: Utils.parseDoubles(data["habits"]),
-                    start: data["start"] != null
-                        ? DateTime.parse("2022-06-27")
-                        : null,
-                    primary: colors[0],
-                    secondary: colors[1],
-                  );
-                  generateImage(statisticsPainter);
-
-                  return SizedBox.expand(
-                    child: ColoredBox(
-                      color: Colors.black,
-                      child: CustomPaint(painter: statisticsPainter),
-                    ),
-                  );
-                });
-          } else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-        });
-  }
-}
-
-class Utils {
-  static List<double> parseDoubles(dynamic data) {
-    final s = data.cast<String>() as List<String>;
-
-    return s.map((e) => double.tryParse(e)!).toList();
+          return SizedBox.expand(
+            child: ColoredBox(
+              color: Colors.black,
+              child: CustomPaint(painter: snapshot.data!),
+            ),
+          );
+        } else {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+      },
+    );
   }
 }
