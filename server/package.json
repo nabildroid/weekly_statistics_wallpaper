@@ -1,0 +1,19 @@
+{
+  "name": "wallpaper_server",
+  "version": "1.0.0",
+  "description": "a webserver that puts a request to flutter queue and wait for the response",
+  "main": "src/main.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nabildroid/weekly_statistics_wallpaper.git"
+  },
+  "author": "Lakrib Nabil",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nabildroid/weekly_statistics_wallpaper/issues"
+  },
+  "homepage": "https://github.com/nabildroid/weekly_statistics_wallpaper#readme"
+}
