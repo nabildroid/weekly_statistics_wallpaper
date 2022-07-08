@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:weekly_statistics_wallpaper/queue.dart';
 import 'package:weekly_statistics_wallpaper/statistics_painter.dart';
@@ -21,6 +21,12 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   final Queue events = Queue();
 
+  List<QueueRequest> requests = [];
+
+  QueueRequest? get request {
+    return requests.first;
+  }
+
   @override
   void initState() {
     init();
@@ -29,8 +35,14 @@ class _AppState extends State<App> {
 
   void init() async {
     await events.init();
-    events.listen().forEach((element) {
-      print(element);
+    events.listen().listen((event) {
+      requests.add(event);
+    });
+  }
+
+  void nextRequest() {
+    setState(() {
+      requests.removeAt(0);
     });
   }
 
@@ -44,7 +56,9 @@ class _AppState extends State<App> {
     final img = await picture.toImage(size.width.floor(), size.height.floor());
     final pngBytes = await img.toByteData(format: ImageByteFormat.png);
     if (pngBytes != null) {
-      await Utils.writeToFile(pngBytes, "img.png");
+      await Utils.writeToFile(pngBytes, "/tmp/${request!.id}.png");
+      await Future.delayed(const Duration(seconds: 2));
+      nextRequest();
     }
   }
 
@@ -102,6 +116,10 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
+    if (request == null) {
+      return const SizedBox.shrink();
+    }
+
     return FutureBuilder<StatisticsPainter>(
       future: createStatisticsPainter(),
       builder: (context, snapshot) {
