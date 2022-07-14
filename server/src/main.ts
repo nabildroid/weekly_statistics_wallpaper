@@ -11,9 +11,10 @@ const app = Express();
 
 const rootFolder = (x: string) => path.join("/tmp", `${x}.png`);
 
-app.use((req, res, next) => {
-  if (bus.isReady) next();
-  else res.sendStatus(404);
+app.use(async (req, res, next) => {
+  await bus.isReady;
+
+  next();
 });
 
 app.get("/", async (req, res) => {

@@ -9,8 +9,15 @@ export default class Queue {
     this.checkers = [];
   }
 
-  public get isReady(): boolean {
-    return this.socket != undefined;
+  public get isReady(): Promise<void> {
+    return new Promise((acc) => {
+      const timer = setInterval(() => {
+        if (this.socket) {
+          clearInterval(timer);
+          acc();
+        }
+      }, 100);
+    });
   }
 
   async init(IPC_PORT: number): Promise<void> {
