@@ -4,7 +4,8 @@
   "description": "a webserver that puts a request to flutter queue and wait for the response",
   "main": "src/main.ts",
   "scripts": {
-    "dev": "nodemon src/main.ts --watch"
+    "dev": "nodemon src/main.ts --watch",
+    "start": "nodemon src/main.ts"
   },
   "repository": {
     "type": "git",

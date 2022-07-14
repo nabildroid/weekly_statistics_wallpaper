@@ -1,8 +1,25 @@
 steps:
-  - name: 'gcr.io/cloud-builders/docker'
-    id: "build_flutter"
+  - name: 'us-central1-docker.pkg.dev/supernabil-86c2b/flutter/linux_builder'
+    id: "init_progect"
+    dir: "app"
     args:
-      - 'build'
-      - '-t'
       - 'flutter'
-      - 'app/dockerfile'
+      - 'create'
+      - '.'
+  - name: 'us-central1-docker.pkg.dev/supernabil-86c2b/flutter/linux_builder'
+    id: "build_app"
+    dir: "app"
+    args:
+      - 'flutter'
+      - 'build'
+      - 'linux'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/supernabil-86c2b/wallpaper_generator', '.']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/supernabil-86c2b/wallpaper_generator']
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args: ['run', 'deploy', 'weekly-wallpaper', '--image', 'gcr.io/supernabil-86c2b/wallpaper_generator',"--region","europe-west3"]

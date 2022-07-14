@@ -69,7 +69,7 @@ class _AppState extends State<App> {
   }
 
   Future<dynamic> fetchStatistics() async {
-    const endpoint = "https://supernabil.herokuapp.com/ticktick/wallpaper";
+    const endpoint = "https://super.laknabil.me/ticktick/wallpaper";
     final response = await get(Uri.parse(endpoint));
     return jsonDecode(response.body);
   }

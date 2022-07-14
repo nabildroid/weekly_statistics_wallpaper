@@ -1,4 +1,5 @@
-FROM ubuntu:18
+FROM ubuntu:18.04
+
 
 # Prerequisites
 RUN apt update && apt install -y curl git unzip xz-utils zip libglu1-mesa  wget
@@ -24,8 +25,7 @@ user developer
 RUN flutter doctor
 RUN flutter devices
 
-COPY workspace/demo .
 user root
 
-RUN flutter create . 
-RUN flutter build linux
+run flutter
+cmd ["flutter"]
