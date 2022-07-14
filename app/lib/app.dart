@@ -63,15 +63,19 @@ class _AppState extends State<App> {
     final pngBytes = await img.toByteData(format: ImageByteFormat.png);
     if (pngBytes != null) {
       await Utils.writeToFile(pngBytes, "/tmp/${request!.id}.png");
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(milliseconds: 100));
       nextRequest();
     }
   }
 
   Future<dynamic> fetchStatistics() async {
-    const endpoint = "https://super.laknabil.me/ticktick/wallpaper";
-    final response = await get(Uri.parse(endpoint));
-    return jsonDecode(response.body);
+    try {
+      const endpoint = "https://super.laknabil.me/ticktick/wallpaper";
+      final response = await get(Uri.parse(endpoint));
+      return jsonDecode(response.body);
+    } catch (e) {
+      return fetchStatistics();
+    }
   }
 
   Future<List<Color>> fetchColor(bool isPositive) async {
