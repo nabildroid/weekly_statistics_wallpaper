@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -7,6 +8,15 @@ class QueueRequest {
 
   QueueRequest({required this.id, required this.data});
 }
+
+final StreamTransformer requestSplitter = StreamTransformer.fromHandlers(
+  handleData: (data, sink) {
+    final slices = data.toString().split(RegExp("@@@"));
+    for (final element in slices) {
+      if (element.isNotEmpty) sink.add(element);
+    }
+  },
+);
 
 class Queue {
   late final Socket socket;
@@ -20,9 +30,11 @@ class Queue {
   }
 
   Stream<QueueRequest> listen() {
-    return socket.transform(utf8.decoder.cast()).map((event) {
+    return socket
+        .transform(utf8.decoder.cast())
+        .transform(requestSplitter)
+        .map((event) {
       final data = jsonDecode(event.toString());
-      print(data);
       return QueueRequest(
         id: data["id"],
         data: data["data"],

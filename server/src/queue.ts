@@ -31,7 +31,7 @@ export default class Queue {
   push(data: Object) {
     const id = Math.round(Math.random() * 1000000);
 
-    this.socket.write(JSON.stringify({ id, data }));
+    this.socket.write(JSON.stringify({ id, data })+"@@@");
 
     return id;
   }
