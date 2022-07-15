@@ -5,4 +5,5 @@ the statistics are fetched from API
 
 this server utilize flutter application for generating the images
 
+![example](app/img.png)
 
